@@ -1,0 +1,10 @@
+camera_id,location_name,road_name,city,latitude,longitude,speed_limit_kph,camera_type
+CAM-EDSA-GUA,EDSA - Guadalupe,EDSA,Makati,14.5664,121.0455,60,SPEED
+CAM-EDSA-SHAW,EDSA - Shaw Boulevard,EDSA,Mandaluyong,14.5813,121.0536,60,INTERSECTION
+CAM-EDSA-CUB,EDSA - Cubao,EDSA,Quezon City,14.6203,121.0525,60,SPEED
+CAM-CW-PHILCOA,Commonwealth Avenue - Philcoa,Commonwealth Avenue,Quezon City,14.6537,121.0513,60,INTERSECTION
+CAM-CW-TSORA,Commonwealth Avenue - Tandang Sora,Commonwealth Avenue,Quezon City,14.6760,121.0850,60,SPEED
+CAM-QA-ARANETA,Quezon Avenue - Araneta Avenue,Quezon Avenue,Quezon City,14.6254,121.0150,60,INTERSECTION
+CAM-ROXAS-QUIR,Roxas Boulevard - Quirino Avenue,Roxas Boulevard,Manila,14.5710,120.9837,60,INTERSECTION
+CAM-ESP-LACSON,Espana Boulevard - Lacson Avenue,Espana Boulevard,Manila,14.6100,120.9890,40,NO_PARKING
+CAM-AUR-GILMORE,Aurora Boulevard - Gilmore Avenue,Aurora Boulevard,Quezon City,14.6130,121.0340,40,NO_PARKING

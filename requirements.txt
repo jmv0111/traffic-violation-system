@@ -1,0 +1,3 @@
+# Producer and query tool
+confluent-kafka==2.6.1
+cassandra-driver==3.29.2

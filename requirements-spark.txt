@@ -1,0 +1,4 @@
+# Only needed to run the Spark job outside Docker (requires Java 17)
+-r requirements.txt
+pyspark==3.5.3
+pytest==8.3.3
