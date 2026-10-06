@@ -2,7 +2,7 @@
 #
 #   docker compose up --build
 #
-# Host ports: Kafka localhost:9092, Cassandra localhost:9042, Spark UI localhost:4040
+# Host ports: dashboard localhost:8000, Kafka localhost:9092, Cassandra localhost:9042, Spark UI localhost:4040
 
 services:
   kafka:
@@ -115,6 +115,26 @@ services:
     volumes:
       - ./data:/app/data
     command: ["python", "-m", "ncap.producer", "--loop"]
+    restart: on-failure
+
+  api:
+    build: .
+    container_name: ncap-api
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+      cassandra-init:
+        condition: service_completed_successfully
+    ports:
+      - "8000:8000"
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      CASSANDRA_HOST: cassandra
+      SPARK_UI_URL: http://spark-processor:4040
+    volumes:
+      - ./web:/app/web:ro
+    command: ["uvicorn", "ncap.api:app", "--host", "0.0.0.0", "--port", "8000",
+              "--timeout-graceful-shutdown", "3"]
     restart: on-failure
 
 volumes:

@@ -1,4 +1,4 @@
-# Image for the Kafka producer and the Cassandra query tool.
+# Image for the Kafka producer, the Cassandra query tool, and the dashboard API.
 FROM python:3.11-slim
 
 WORKDIR /app

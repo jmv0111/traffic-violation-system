@@ -73,3 +73,15 @@ CASSANDRA_HOST = _str("CASSANDRA_HOST", "localhost")
 CASSANDRA_PORT = _int("CASSANDRA_PORT", 9042)
 CASSANDRA_KEYSPACE = _str("CASSANDRA_KEYSPACE", "ncap")
 CASSANDRA_WRITE_CONSISTENCY = _str("CASSANDRA_WRITE_CONSISTENCY", "LOCAL_QUORUM")
+
+# --- Serving: dashboard API ---------------------------------------------------
+WEB_DIR = Path(_str("WEB_DIR", str(PROJECT_ROOT / "web")))
+# Spark UI REST API, used for the dashboard's pipeline health view.
+SPARK_UI_URL = _str("SPARK_UI_URL", "http://localhost:4040")
+# How often the API checks Cassandra for new violations.
+API_POLL_SECONDS = _float("API_POLL_SECONDS", 3.0)
+# Violations can be written long after their violation_time (illegal parking is only
+# final once the session window closes), so each poll re-reads this far back.
+API_LOOKBACK_MINUTES = _int("API_LOOKBACK_MINUTES", 30)
+# Re-read the whole day now and then, to catch anything written even later.
+API_FULL_RELOAD_SECONDS = _int("API_FULL_RELOAD_SECONDS", 300)
