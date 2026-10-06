@@ -1,3 +1,5 @@
-# Producer and query tool
+# Producer, query tool, and dashboard API
 confluent-kafka==2.6.1
 cassandra-driver==3.29.2
+fastapi==0.115.6
+uvicorn==0.32.1

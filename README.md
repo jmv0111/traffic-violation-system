@@ -15,6 +15,9 @@ data streams in, and stores finalized violation records for ticketing.
                                                    ├ BEATING_RED_LIGHT               violations_by_camera
                                                    ├ ILLEGAL_PARKING (session window) violations_by_type
                                                    └ camera speed stats (sliding)    camera_speed_stats
+                                                                                              │
+                                                              web dashboard  ◄──  ncap/api.py ◄┘
+                                                              web/index.html      (FastAPI, :8000)
 ```
 
 ## How the code maps to the proposal's objectives
@@ -25,6 +28,7 @@ data streams in, and stores finalized violation records for ticketing.
 | Simulate high-velocity data ingestion of Metro Manila traffic telemetry | `ncap/dataset/generate_placeholder.py`, `ncap/producer.py` |
 | Windowed transformations in Spark to filter and identify violations | `ncap/stream_processor.py` |
 | A persistent, highly available Cassandra data model to store and retrieve violations | `cassandra/schema.cql`, `ncap/query_violations.py` |
+| Present violations and pipeline health in real time | `ncap/api.py`, `web/index.html` |
 
 ## ⚠ The dataset is a placeholder
 
@@ -63,14 +67,38 @@ docker compose up --build
 ```
 
 This starts Kafka (KRaft mode, no ZooKeeper), creates the topic, starts Cassandra,
-loads the schema, starts the Spark job, and starts the producer replaying the
-dataset in a loop. The first start takes a few minutes: Cassandra has to boot, and
+loads the schema, starts the Spark job, starts the producer replaying the
+dataset in a loop, and starts the dashboard at **http://localhost:8000**. The first start takes a few minutes: Cassandra has to boot, and
 Spark downloads the Kafka/Cassandra connector jars.
 
 Violations appear after about a window length plus the watermark (≈1.5 to 2
 minutes), because Spark only writes a window once it's final. Look for lines like
 `[speeding_violations] batch 7: wrote 3 rows ...` in the `ncap-spark` logs. The
 Spark UI is at http://localhost:4040.
+
+### Dashboard
+
+http://localhost:8000 shows violations as Spark writes them: a live feed, filters,
+a camera map, plate lookup, a printable daily summary, and the health of Kafka,
+Spark, and Cassandra. `ncap/api.py` serves the page and a small JSON API:
+
+| Endpoint | Returns |
+|---|---|
+| `GET /api/violations?limit=300` | today's violations (Manila date), newest first |
+| `GET /api/stream` | Server-Sent Events, one message per newly stored violation |
+| `GET /api/plate/{plate}` | every violation of a vehicle (`violations_by_plate`) |
+| `GET /api/stats`, `GET /api/summary` | today's totals, per-camera counts, averages |
+| `GET /api/cameras` | the camera registry |
+| `GET /api/health` | Kafka topic offsets/rate, Spark UI status, Cassandra latency |
+
+The API keeps today's violations in memory: it reads the whole day from
+`violations_by_type` on start, then every `API_POLL_SECONDS` (3 s) re-reads the last
+`API_LOOKBACK_MINUTES` (30) and pushes anything new to the stream. The lookback
+is that long because illegal parking is only written once its session window
+closes, up to ~15 minutes after the violation time. Interactive API docs are at
+http://localhost:8000/docs.
+
+`web/` is mounted into the container, so UI edits only need a browser refresh.
 
 ### Querying violations
 
@@ -154,8 +182,9 @@ pip install -r requirements-spark.txt
 python -m ncap.dataset.generate_placeholder
 python -m ncap.stream_processor --debug      # terminal 1
 python -m ncap.producer --loop --speedup 5   # terminal 2
+uvicorn ncap.api:app --port 8000             # terminal 3, then open http://localhost:8000
 python -m ncap.query_violations type SPEEDING
-pytest                                       # dataset, loader, and producer tests
+pytest                                       # dataset, loader, producer, and API tests
 ```
 
 ## Project layout
@@ -171,5 +200,7 @@ ncap/dataset/generate_placeholder.py placeholder dataset generator
 ncap/producer.py                     Kafka producer (ingestion)
 ncap/stream_processor.py             Spark Structured Streaming job (transformation)
 ncap/query_violations.py             Cassandra query CLI (retrieval)
+ncap/api.py                          dashboard API (serving)
+web/index.html                       live dashboard
 tests/                               unit tests
 ```
